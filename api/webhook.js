@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { handle } from 'hono/vercel';
 
-const app = new Hono().basePath('/api');
+const app = new Hono();
+
 
 function parseBankSMS(smsBody) {
   const amountRegex = /(?:قيمة|amount|paid|بلغت|شراء بقيمة)\s*([0-9.,]+)/i;
