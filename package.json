@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/server/index.js"
+    "start": "node src/server/index.js",
+    "vercel-build": "echo 'No build needed'"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.0",
