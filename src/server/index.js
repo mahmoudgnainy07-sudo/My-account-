@@ -47,7 +47,4 @@ app.post('/webhook', async (c) => {
   }
 });
 
-// تشغيل السيرفر
-const port = Number(process.env.PORT) || 3000;
-console.log(`السيرفر يعمل الآن على منفذ ${port}`);
-serve({ fetch: app.fetch, port });
+export default app.fetch;
