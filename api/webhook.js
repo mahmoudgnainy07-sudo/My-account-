@@ -1,8 +1,6 @@
 import { Hono } from 'hono';
-import { handle } from 'hono/vercel';
 
 const app = new Hono();
-
 
 function parseBankSMS(smsBody) {
   const amountRegex = /(?:قيمة|amount|paid|بلغت|شراء بقيمة)\s*([0-9.,]+)/i;
@@ -16,7 +14,7 @@ function parseBankSMS(smsBody) {
   return { amount, type, description };
 }
 
-app.post('/webhook', async (c) => {
+app.post('/api/webhook.js', async (c) => {
   try {
     const body = await c.req.json();
     if (body.apiKey !== process.env.WEBHOOK_API_KEY) return c.json({ error: 'غير مصرح' }, 401);
@@ -28,4 +26,4 @@ app.post('/webhook', async (c) => {
   }
 });
 
-export default handle(app);
+export default app.fetch;
