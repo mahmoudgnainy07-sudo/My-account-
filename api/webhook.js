@@ -1,4 +1,4 @@
-function parseBankSMS(smsBody) {
+const parseBankSMS = (smsBody) => {
   if (!smsBody) return { amount: 0, type: 'مصروف', description: 'رسالة فارغة' };
   
   const amountRegex = /(?:قيمة|amount|paid|بلغت|شراء بقيمة)\s*([0-9.,]+)/i;
@@ -13,10 +13,10 @@ function parseBankSMS(smsBody) {
   if (matchStore) description = matchStore[1].trim();
   
   return { amount, type, description };
-}
+};
 
-export default async function handler(request, response) {
-  // تفعيل استقبال الطلبات من أي مسار وبأمان تام
+// التصدير المتوافق 100% مع بيئة Vercel Node.js التقليدية
+module.exports = async function handler(request, response) {
   if (request.method !== 'POST') {
     return response.status(200).json({ success: false, error: 'Method not allowed' });
   }
@@ -24,7 +24,6 @@ export default async function handler(request, response) {
   try {
     let smsBody = '';
     
-    // قراءة البيانات بمرونة سواء مبعوتة JSON أو نص عادي
     if (request.body) {
       if (typeof request.body === 'string') {
         try {
@@ -34,6 +33,18 @@ export default async function handler(request, response) {
           smsBody = request.body;
         }
       } else {
+        smsBody = request.body.smsBody || JSON.stringify(request.body);
+      }
+    }
+
+    const parsedData = parseBankSMS(smsBody);
+    console.log("تم الاستقبال بنجاح:", parsedData);
+    
+    return response.status(200).json({ success: true, data: parsedData });
+  } catch (error) {
+    return response.status(200).json({ success: false, error: error.message });
+  }
+};
         smsBody = request.body.smsBody || JSON.stringify(request.body);
       }
     }
