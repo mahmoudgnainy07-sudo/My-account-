@@ -1,6 +1,3 @@
-const { Hono } = require('hono');
-const app = new Hono();
-
 function parseBankSMS(smsBody) {
   if (!smsBody) return { amount: 0, type: 'مصروف', description: 'رسالة فارغة' };
   
@@ -18,22 +15,38 @@ function parseBankSMS(smsBody) {
   return { amount, type, description };
 }
 
-// مسار عام يستقبل من أي مكان لمنع الـ 404 والـ 500
-app.all('*', async (c) => {
+export default async function handler(request, response) {
+  // تفعيل استقبال الطلبات من أي مسار وبأمان تام
+  if (request.method !== 'POST') {
+    return response.status(200).json({ success: false, error: 'Method not allowed' });
+  }
+
   try {
-    const rawText = await c.req.text();
-    let body = {};
+    let smsBody = '';
     
-    try {
-      body = JSON.parse(rawText);
-    } catch (jsonErr) {
-      body = { smsBody: rawText };
+    // قراءة البيانات بمرونة سواء مبعوتة JSON أو نص عادي
+    if (request.body) {
+      if (typeof request.body === 'string') {
+        try {
+          const parsed = JSON.parse(request.body);
+          smsBody = parsed.smsBody || request.body;
+        } catch (e) {
+          smsBody = request.body;
+        }
+      } else {
+        smsBody = request.body.smsBody || JSON.stringify(request.body);
+      }
     }
 
-    const textToParse = body.smsBody || rawText || '';
-    const parsedData = parseBankSMS(textToParse);
+    const parsedData = parseBankSMS(smsBody);
+    console.log("تم الاستقبال بنجاح:", parsedData);
     
-    return c.json({ success: true, data: parsedData }, 200);
+    // الرد بـ 200 الأكيدة
+    return response.status(200).json({ success: true, data: parsedData });
+  } catch (error) {
+    return response.status(200).json({ success: false, error: error.message });
+  }
+}
   } catch (e) {
     return c.json({ success: false, error: e.message }, 200);
   }
