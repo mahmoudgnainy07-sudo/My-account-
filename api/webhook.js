@@ -15,7 +15,6 @@ const parseBankSMS = (smsBody) => {
   return { amount, type, description };
 };
 
-// التصدير المتوافق 100% مع بيئة Vercel Node.js التقليدية
 module.exports = async function handler(request, response) {
   if (request.method !== 'POST') {
     return response.status(200).json({ success: false, error: 'Method not allowed' });
@@ -45,36 +44,3 @@ module.exports = async function handler(request, response) {
     return response.status(200).json({ success: false, error: error.message });
   }
 };
-        smsBody = request.body.smsBody || JSON.stringify(request.body);
-      }
-    }
-
-    const parsedData = parseBankSMS(smsBody);
-    console.log("تم الاستقبال بنجاح:", parsedData);
-    
-    // الرد بـ 200 الأكيدة
-    return response.status(200).json({ success: true, data: parsedData });
-  } catch (error) {
-    return response.status(200).json({ success: false, error: error.message });
-  }
-}
-  } catch (e) {
-    return c.json({ success: false, error: e.message }, 200);
-  }
-});
-
-module.exports = app.fetch;
-    console.log("تم الاستقبال بنجاح:", parsedData);
-    
-    return c.json({ success: true, data: parsedData });
-  } catch (e) {
-    return c.json({ success: false, error: e.message }, 200); // إجبار السيرفر يرد بـ 200 حتى لو حصلت حاجة
-  }
-});
-
-export default app.fetch;
-    return c.json({ error: 'خطأ داخلي في السيرفر' }, 500);
-  }
-});
-
-export default app.fetch;
