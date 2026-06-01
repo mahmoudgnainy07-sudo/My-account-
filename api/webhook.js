@@ -16,13 +16,25 @@ function parseBankSMS(smsBody) {
 
 app.post('/api/webhook.js', async (c) => {
   try {
-    const body = await c.req.json();
-    if (body.apiKey !== process.env.WEBHOOK_API_KEY) return c.json({ error: 'غير مصرح' }, 401);
-    const parsedData = parseBankSMS(body.smsBody);
+    // قراءة نص الطلب بالكامل لتفادي تعليق الـ JSON parser
+    const rawText = await c.req.text();
+    let body;
+    
+    try {
+      body = JSON.parse(rawText);
+    } catch (jsonErr) {
+      return c.json({ error: 'Invalid JSON format' }, 400);
+    }
+
+    if (body.apiKey !== process.env.WEBHOOK_API_KEY) {
+      return c.json({ error: 'غير مصرح' }, 401);
+    }
+
+    const parsedData = parseBankSMS(body.smsBody || '');
     console.log("تم الاستقبال:", parsedData);
     return c.json({ success: true, data: parsedData });
   } catch (e) {
-    return c.json({ error: 'خطأ' }, 500);
+    return c.json({ error: 'خطأ داخلي في السيرفر' }, 500);
   }
 });
 
