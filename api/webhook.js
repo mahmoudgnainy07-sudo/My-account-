@@ -1,5 +1,4 @@
-import { Hono } from 'hono';
-
+const { Hono } = require('hono');
 const app = new Hono();
 
 function parseBankSMS(smsBody) {
@@ -19,7 +18,8 @@ function parseBankSMS(smsBody) {
   return { amount, type, description };
 }
 
-app.post('/api/webhook.js', async (c) => {
+// مسار عام يستقبل من أي مكان لمنع الـ 404 والـ 500
+app.all('*', async (c) => {
   try {
     const rawText = await c.req.text();
     let body = {};
@@ -27,13 +27,19 @@ app.post('/api/webhook.js', async (c) => {
     try {
       body = JSON.parse(rawText);
     } catch (jsonErr) {
-      // لو الـ MacroDroid بعت نص عادي مش JSON
       body = { smsBody: rawText };
     }
 
     const textToParse = body.smsBody || rawText || '';
     const parsedData = parseBankSMS(textToParse);
     
+    return c.json({ success: true, data: parsedData }, 200);
+  } catch (e) {
+    return c.json({ success: false, error: e.message }, 200);
+  }
+});
+
+module.exports = app.fetch;
     console.log("تم الاستقبال بنجاح:", parsedData);
     
     return c.json({ success: true, data: parsedData });
