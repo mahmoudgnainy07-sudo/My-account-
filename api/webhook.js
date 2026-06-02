@@ -38,33 +38,20 @@ module.exports = async function handler(request, response) {
 
     const parsedData = parseBankSMS(smsBody);
     
-    // إرسال البيانات فوراً إلى Make.com
-    try {
-      await fetch("https://hook.eu1.make.com/k439wwu2yryclnm6o74l0zvyf9fwxyfi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: parsedData.amount,
-          type: parsedData.type,
-          description: parsedData.description,
-          rawSMS: smsBody,
-          date: new Date().toISOString()
-        })
-      });
-    } catch (makeErr) {
-      console.error("خطأ في الإرسال لـ Make:", makeErr.message);
-    }
-    
-    return response.status(200).json({ success: true, data: parsedData });
-  } catch (error) {
-    return response.status(200).json({ success: false, error: error.message });
-  }
-};
-    }
+    // إرسال البيانات لـ Make بشكل آمن تماماً في الخلفية
+    fetch("https://hook.eu1.make.com/k439wwu2yryclnm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: parsedData.amount,
+        type: parsedData.type,
+        description: parsedData.description,
+        rawSMS: smsBody,
+        date: new Date().toISOString()
+      })
+    }).catch(err => console.error("Make Error:", err.message));
 
-    const parsedData = parseBankSMS(smsBody);
-    console.log("تم الاستقبال بنجاح:", parsedData);
-    
+    // الرد الفوري بـ 200 للموبايل
     return response.status(200).json({ success: true, data: parsedData });
   } catch (error) {
     return response.status(200).json({ success: false, error: error.message });
